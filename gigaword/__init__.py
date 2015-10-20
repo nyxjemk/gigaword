@@ -18,6 +18,13 @@ Mention = namedtuple('Mention', [
 YMD = namedtuple('YMD', 'year month day')
 
 
+def parse_ymd(text):
+    year = int(text[:4])
+    month = int(text[4:6])
+    day = int(text[6:])
+    return YMD(year, month, day)
+
+
 def parse_lisp(text):
     text = text.replace('(', ' ( ')
     text = text.replace(')', ' ) ')
@@ -88,10 +95,8 @@ def read_file(path,
                 xml = etree.fromstringlist(lines)
 
                 doc_id = xml.attrib['id']
-                time_str = doc_id.split('_')[-1].split('.')[0]
-                year = int(time_str[:4])
-                month = int(time_str[4:6])
-                day = int(time_str[6:])
+                date_str = doc_id.split('_')[-1].split('.')[0]
+                date = parse_ymd(date_str)
 
                 headline_xml = xml.find('HEADLINE')
                 if headline_xml is not None and parse_headline:
@@ -127,7 +132,7 @@ def read_file(path,
 
                 yield Document(
                     id=xml.attrib['id'],
-                    date=YMD(year, month, day),
+                    date=date,
                     type=xml.attrib['type'],
                     headline=headline,
                     dateline=dateline,
