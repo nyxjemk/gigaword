@@ -92,7 +92,9 @@ def read_file(path,
             lines.append(line)
 
             if line.strip() == '</DOC>':
-                xml = etree.fromstringlist(lines)
+                lines = ['<xml>'] + lines
+                lines.append('</xml>')
+                xml = etree.fromstringlist(lines).find('DOC')
 
                 doc_id = xml.attrib['id']
                 date_str = doc_id.split('_')[-1].split('.')[0]
