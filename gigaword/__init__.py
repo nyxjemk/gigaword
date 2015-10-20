@@ -38,9 +38,9 @@ def parse_lisp(text):
 def parse_text(xml):
     p = xml.findall('P')
     if len(p) == 0:
-        p = [xml.text.strip()]
+        p = [parse_lisp(xml.text.strip())]
     else:
-        p = [x.text.strip() for x in p]
+        p = [parse_lisp(x.text.strip()) for x in p]
     return p
 
 
@@ -83,20 +83,46 @@ def read_file(path):
 
             if line.strip() == '</DOC>':
                 xml = etree.fromstringlist(lines)
+
                 doc_id = xml.attrib['id']
                 time_str = doc_id.split('_')[-1].split('.')[0]
                 year = int(time_str[:4])
                 month = int(time_str[4:6])
                 day = int(time_str[6:])
+
+                headline_xml = xml.find('HEADLINE')
+                if headline_xml is not None:
+                    headline = parse_lisp(headline_xml.text.strip())
+                else:
+                    headline = None
+
+                dateline_xml = xml.find('DATELINE')
+                if dateline_xml is not None:
+                    dateline = parse_lisp(dateline_xml.text.strip())
+                else:
+                    dateline = None
+
+                coreferences = xml.find('coreferences')
+                if coreferences is not None:
+                    coreferences = [[parse_mention(m) for m in x]
+                                    for x in coreferences]
+                else:
+                    coreferences = []
+
+                sentences = xml.find('sentences')
+                if sentences is not None:
+                    sentences = [parse_sentence(x)
+                                 for x in xml.find('sentences')]
+                else:
+                    sentences = []
+
                 yield Document(
                     id=xml.attrib['id'],
                     date=YMD(year, month, day),
                     type=xml.attrib['type'],
-                    headline=xml.find('HEADLINE').text.strip(),
-                    dateline=xml.find('DATELINE').text.strip(),
+                    headline=headline,
+                    dateline=dateline,
                     text=parse_text(xml.find('TEXT')),
-                    sentences=[parse_sentence(x)
-                               for x in xml.find('sentences')],
-                    coreferences=[[parse_mention(m) for m in x]
-                                  for x in xml.find('coreferences')])
+                    sentences=sentences,
+                    coreferences=coreferences)
                 lines = []
