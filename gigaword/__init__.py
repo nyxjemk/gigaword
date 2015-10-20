@@ -1,4 +1,5 @@
 import gzip
+import xml.dom.pulldom as pulldom
 try:
     import xml.etree.cElementTree as etree
 except ImportError:
@@ -82,17 +83,11 @@ def read_file(path,
               parse_coreferences=True, parse_sentences=True,
               parse_text=True):
     with gzip.open(path) as source:
-        source.readline()
-        # file_line = source.readline() + "</FILE>"
-        # file_tag = etree.fromstring(file_line)
-        # file_id = file_tag.attrib['id']
-
-        lines = []
-        for line in source:
-            lines.append(line)
-
-            if line.strip() == '</DOC>':
-                xml = etree.fromstringlist(lines)
+        doc = pulldom.parse(source)
+        for event, node in doc:
+            if event == pulldom.START_ELEMENT and node.localName == "DOC":
+                doc.expandNode(node)
+                xml = etree.fromstring(node.toxml())
 
                 doc_id = xml.attrib['id']
                 date_str = doc_id.split('_')[-1].split('.')[0]
