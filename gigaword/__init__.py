@@ -70,7 +70,10 @@ def parse_sentence(xml):
         tokens=[parse_token(x) for x in xml.find('tokens')])
 
 
-def read_file(path):
+def read_file(path,
+              parse_headline=True, parse_dateline=True,
+              parse_coreferences=True, parse_sentences=True,
+              parse_text=True):
     with gzip.open(path) as source:
         source.readline()
         # file_line = source.readline() + "</FILE>"
@@ -91,30 +94,36 @@ def read_file(path):
                 day = int(time_str[6:])
 
                 headline_xml = xml.find('HEADLINE')
-                if headline_xml is not None:
+                if headline_xml is not None and parse_headline:
                     headline = parse_lisp(headline_xml.text.strip())
                 else:
                     headline = None
 
                 dateline_xml = xml.find('DATELINE')
-                if dateline_xml is not None:
+                if dateline_xml is not None and parse_dateline:
                     dateline = parse_lisp(dateline_xml.text.strip())
                 else:
                     dateline = None
 
                 coreferences = xml.find('coreferences')
-                if coreferences is not None:
+                if coreferences is not None and parse_coreferences:
                     coreferences = [[parse_mention(m) for m in x]
                                     for x in coreferences]
                 else:
                     coreferences = []
 
                 sentences = xml.find('sentences')
-                if sentences is not None:
+                if sentences is not None and parse_sentences:
                     sentences = [parse_sentence(x)
                                  for x in xml.find('sentences')]
                 else:
                     sentences = []
+
+                text = xml.find('TEXT')
+                if text is not None and parse_text:
+                    text = parse_text(text)
+                else:
+                    text = None
 
                 yield Document(
                     id=xml.attrib['id'],
@@ -122,7 +131,7 @@ def read_file(path):
                     type=xml.attrib['type'],
                     headline=headline,
                     dateline=dateline,
-                    text=parse_text(xml.find('TEXT')),
+                    text=text,
                     sentences=sentences,
                     coreferences=coreferences)
                 lines = []
