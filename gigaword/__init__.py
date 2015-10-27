@@ -61,14 +61,17 @@ def parse_mention(xml):
 
 
 def parse_token(xml):
+    pos_tag = xml.find('POS')
+    ner_tag = xml.find('NER')
+
     return Token(
         id=xml.attrib['id'],
         word=xml.find('word').text,
         lemma=xml.find('lemma').text,
         begin=int(xml.find('CharacterOffsetBegin').text),
         end=int(xml.find('CharacterOffsetEnd').text),
-        pos=xml.find('POS').text,
-        ner=xml.find('NER').text)
+        pos=pos_tag.text if pos_tag is not None else None,
+        ner=ner_tag.text if ner_tag is not None else None)
 
 
 def parse_sentence(xml):
