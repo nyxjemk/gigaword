@@ -8,10 +8,8 @@ from collections import namedtuple
 
 Token = namedtuple('Token', [
     'id', 'word', 'lemma', 'begin', 'end', 'pos', 'ner'])
-
-SToken = namedtuple('Token', [
+SToken = namedtuple('SToken', [
     'id', 'word'])
-
 Sentence = namedtuple('Sentence', [
     'id', 'tokens'])
 Document = namedtuple('Document', [
