@@ -45,9 +45,9 @@ def _parse_lisp(text):
 def _parse_text(xml):
     p = xml.findall('P')
     if len(p) == 0:
-        p = [parse_lisp(xml.text.strip())]
+        p = [_parse_lisp(xml.text.strip())]
     else:
-        p = [parse_lisp(x.text.strip()) for x in p]
+        p = [_parse_lisp(x.text.strip()) for x in p]
     return p
 
 
@@ -77,7 +77,7 @@ def _parse_token(xml):
 def _parse_sentence(xml):
     return Sentence(
         id=xml.attrib['id'],
-        tokens=[parse_token(x) for x in xml.find('tokens')])
+        tokens=[_parse_token(x) for x in xml.find('tokens')])
 
 
 def read_file(path,
