@@ -8,6 +8,10 @@ from collections import namedtuple
 
 Token = namedtuple('Token', [
     'id', 'word', 'lemma', 'begin', 'end', 'pos', 'ner'])
+
+SToken = namedtuple('Token', [
+    'id', 'word'])
+
 Sentence = namedtuple('Sentence', [
     'id', 'tokens'])
 Document = namedtuple('Document', [
@@ -60,30 +64,35 @@ def _parse_mention(xml):
         head=int(xml.find('head').text))
 
 
-def _parse_token(xml):
+def _parse_token(xml, simple_token=True):
     pos_tag = xml.find('POS')
     ner_tag = xml.find('NER')
 
-    return Token(
-        id=xml.attrib['id'],
-        word=xml.find('word').text,
-        lemma=xml.find('lemma').text,
-        begin=int(xml.find('CharacterOffsetBegin').text),
-        end=int(xml.find('CharacterOffsetEnd').text),
-        pos=pos_tag.text if pos_tag is not None else None,
-        ner=ner_tag.text if ner_tag is not None else None)
+    if simple_token:
+        return Token(
+                    id=xml.attrib['id'],
+                    word=xml.find('word').text)
+    else:
+        return Token(
+            id=xml.attrib['id'],
+            word=xml.find('word').text,
+            lemma=xml.find('lemma').text,
+            begin=int(xml.find('CharacterOffsetBegin').text),
+            end=int(xml.find('CharacterOffsetEnd').text),
+            pos=pos_tag.text if pos_tag is not None else None,
+            ner=ner_tag.text if ner_tag is not None else None)
 
 
-def _parse_sentence(xml):
+def _parse_sentence(xml, simple_token=True):
     return Sentence(
         id=xml.attrib['id'],
-        tokens=[_parse_token(x) for x in xml.find('tokens')])
+        tokens=[_parse_token(x, simple_token) for x in xml.find('tokens')])
 
 
 def read_file(path,
               parse_headline=True, parse_dateline=True,
               parse_coreferences=True, parse_sentences=True,
-              parse_text=True):
+              parse_text=True, simple_token=True):
     with gzip.open(path, 'rt') as source:
         source.readline()
         # file_line = source.readline() + "</FILE>"
@@ -124,7 +133,7 @@ def read_file(path,
 
                 sentences = xml.find('sentences')
                 if sentences and parse_sentences:
-                    sentences = [_parse_sentence(x)
+                    sentences = [_parse_sentence(x, simple_token)
                                  for x in xml.find('sentences')]
                 else:
                     sentences = []
