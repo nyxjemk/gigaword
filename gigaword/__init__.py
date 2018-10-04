@@ -84,7 +84,7 @@ def read_file(path,
               parse_headline=True, parse_dateline=True,
               parse_coreferences=True, parse_sentences=True,
               parse_text=True):
-    with gzip.open(path) as source:
+    with gzip.open(path, 'rt') as source:
         source.readline()
         # file_line = source.readline() + "</FILE>"
         # file_tag = etree.fromstring(file_line)
