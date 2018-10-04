@@ -67,7 +67,7 @@ def _parse_token(xml, simple_token=True):
     ner_tag = xml.find('NER')
 
     if simple_token:
-        return Token(
+        return SToken(
                     id=xml.attrib['id'],
                     word=xml.find('word').text)
     else:
